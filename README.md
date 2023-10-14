@@ -1,3 +1,10 @@
+# How to run it
+
+### 1. Open the terminal window and run `node ./dist/chatroom.js`
+### 2. Open a second terminal window and run `cd chat-room && npm install && npm run dev`
+### 3. Open your browser in localhost:5173 and enjoy!
+### Tip: You could use an incognito browser to join the chat as a second client.
+
 # Chatting with two people real-time
 <img src='./screenshot1.png' />
 
