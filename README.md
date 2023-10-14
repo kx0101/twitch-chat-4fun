@@ -5,6 +5,12 @@
 ### 3. Open your browser in localhost:5173 and enjoy!
 ### Tip: You could use an incognito browser to join the chat as a second client.
 
+# Enter the chat by clicking the button
+<img src='./screenshot4.png' />
+
+# Enter your name
+<img src='./screenshot5.png' />
+
 # Chatting with two people real-time
 <img src='./screenshot1.png' />
 
