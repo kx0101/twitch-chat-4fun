@@ -1,0 +1,107 @@
+/* Reset some default styles */
+body,
+ul,
+li,
+p,
+h1,
+h2,
+h3,
+button,
+input {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Apply box-sizing globally */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Add a global font */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Set up container */
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  max-width: 600px;
+  margin: 0 auto !important;
+}
+
+/* Header styling */
+.App-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Chat styling */
+ul {
+  margin-top: 20px;
+  list-style: none;
+  padding: 0;
+  max-height: 500px;
+  overflow-y: auto;
+  width: 400px; /* Adjust the width as needed */
+  border: 1px solid #ddd; /* Add a border for clarity */
+  border-radius: 5px; /* Add some roundness to the chat box */
+}
+
+li {
+  padding: 8px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  border-bottom: 1px solid #ddd; /* Add a border between messages */
+  margin: 0;
+  text-align: left;
+}
+
+/* Input and button styling */
+input {
+  width: 300px; /* Adjust the width as needed */
+  height: 50px;
+  padding: 8px;
+  margin-top: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+button {
+  width: 300px; /* Adjust the width as needed */
+  margin-top: 8px;
+  padding: 8px;
+  cursor: pointer;
+  background-color: #4caf50;
+  color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Hover effect for the button */
+button:hover {
+  background-color: #45a049;
+}
+
+/* Style for the join button */
+button.join-button {
+  background-color: #3498db;
+}
+
+button.join-button:hover {
+  background-color: #2980b9;
+}
+
+.input-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
