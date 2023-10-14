@@ -3,6 +3,7 @@ import * as WebSocket from 'ws';
 interface Person {
     name: string;
     color: string;
+    moderator: boolean;
 }
 
 interface ChatMessage {
@@ -31,26 +32,42 @@ class ChatRoom {
     private setupSocketEvents(socket: WebSocket): void {
         socket.on('message', (message: string) => {
             const parsedMessage: ChatMessage = JSON.parse(message);
+            const { type } = parsedMessage;
 
-            if (parsedMessage.type === 'join') {
-                const { name } = parsedMessage.person;
+            switch (type) {
+                case 'join':
+                    const { name } = parsedMessage.person;
 
-                const color = this.generateRandomColor();
-                const person: Person = { name, color };
+                    const color = this.generateRandomColor();
+                    const newPerson: Person = { name, color, moderator: false };
 
-                this.clients.set(socket, person);
+                    if (newPerson.name === 'Elijahkx') {
+                        newPerson.moderator = true;
+                    }
 
-                this.broadcast({ type: 'join', message: `${name} has joined the chat!`, person });
-            } else if (parsedMessage.type === 'chat') {
-                const { message } = parsedMessage;
+                    this.clients.set(socket, newPerson);
 
-                const person = this.clients.get(socket);
+                    this.broadcast({ type: 'chat', message: `${name} has joined the chat!`, person: { name: 'Server', color: 'green', moderator: true } });
+                    break;
 
-                if (!person) {
-                    return;
-                }
+                case 'chat':
+                    const { message } = parsedMessage;
 
-                this.broadcast({ type: 'chat', message, person });
+                    const chattingPerson = this.clients.get(socket);
+
+                    if (!chattingPerson) {
+                        return;
+                    }
+
+                    this.broadcast({ type: 'chat', message, person: chattingPerson });
+                    break;
+
+                case 'command':
+                    this.executeCommand(parsedMessage);
+                    break;
+
+                default:
+                    console.log('wut');
             }
         })
 
@@ -62,7 +79,7 @@ class ChatRoom {
             }
 
             this.clients.delete(socket);
-            this.broadcast({ type: 'chat', message: `${person.name} has left the chat`, person });
+            this.broadcast({ type: 'chat', message: `${person.name} has left the chat`, person: { name: 'Server', color: 'gray', moderator: true } });
         })
     }
 
@@ -73,6 +90,56 @@ class ChatRoom {
             }
         })
     }
+
+    private executeCommand(chatMessage: ChatMessage): void {
+        const { person } = chatMessage;
+        const { name } = person;
+
+        const foundPerson = this.clients.get(this.findClientByName(name) as WebSocket);
+
+        if (foundPerson && !foundPerson.moderator) {
+            return;
+        }
+
+        const { message } = chatMessage;
+        const command = message.split(' ')[0];
+
+        switch (command) {
+            case '/kick':
+                const name = chatMessage.message.split(' ')[1];
+                const client = this.findClientByName(name);
+
+                if (!client) {
+                    return;
+                }
+
+                client.send(JSON.stringify({
+                    type: 'kick',
+                    message: 'You have been kicked from the chat. Please refresh the page.',
+                    person: { name: 'Server', color: 'red', moderator: true }
+                }));
+                client.close();
+
+                this.clients.delete(client);
+                this.broadcast({ type: 'chat', message: `${name} has been kicked from the chat`, person: { name: 'Server', color: 'red', moderator: true } });
+                break;
+
+            default:
+                console.log('wut');
+        }
+    }
+
+    private findClientByName(name: string): WebSocket | undefined {
+        return Array.from(this.clients.keys()).find((client) => {
+            const person = this.clients.get(client);
+
+            if (!person) {
+                return undefined;
+            }
+
+            return person.name === name;
+        });
+    };
 
     private generateRandomColor() {
         const letters = '0123456789ABCDEF';

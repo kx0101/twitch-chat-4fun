@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 interface Person {
     name: string;
-    color: string;
+    color?: string;
 }
 
 interface ChatMessage {
@@ -13,7 +13,10 @@ interface ChatMessage {
 }
 
 function App() {
-    const [name, setName] = useState<string>('');
+    const [person, setPerson] = useState<Person>({
+        name: '',
+    });
+
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState<string>('');
 
@@ -24,6 +27,10 @@ function App() {
             const parsedMessage = JSON.parse(event.data);
 
             setMessages((messages) => [...messages, parsedMessage]);
+
+            if (parsedMessage.type === 'kick') {
+                window.location.reload();
+            }
         }
 
         socket.addEventListener('message', addSocketMessage);
@@ -40,10 +47,14 @@ function App() {
             return;
         }
 
-        setName(name);
+        setPerson((currentPerson) => {
+            const updatedPerson = { ...currentPerson, name };
+            const joinMessage = JSON.stringify({ type: 'join', person: updatedPerson });
 
-        const joinMessage = JSON.stringify({ type: 'join', name });
-        socket.send(joinMessage);
+            socket.send(joinMessage);
+
+            return updatedPerson;
+        });
     }
 
     function sendMessage() {
@@ -51,7 +62,13 @@ function App() {
             return;
         }
 
-        const message = JSON.stringify({ type: 'chat', message: input, name });
+        let message = '';
+
+        message = JSON.stringify({ type: 'chat', message: input, person });
+
+        if (input.startsWith('/')) {
+            message = JSON.stringify({ type: 'command', message: input, person });
+        }
 
         socket.send(message);
         setInput('');
@@ -61,7 +78,7 @@ function App() {
         <div className="App">
             <header className="App-header">
                 <h1>Twitch chat</h1>
-                {!name ? (
+                {person.name.length <= 0 ? (
                     <button onClick={joinChat}>Join Chat</button>
                 ) : (
                     <>
