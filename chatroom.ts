@@ -15,10 +15,12 @@ interface ChatMessage {
 class ChatRoom {
     private server: WebSocket.Server;
     private clients: Map<WebSocket, Person>;
+    private people: number;
 
     constructor() {
         this.server = new WebSocket.Server({ port: 3000 });
         this.clients = new Map<WebSocket, Person>();
+        this.people = 0;
 
         this.setupWebSocket();
     }
@@ -47,6 +49,8 @@ class ChatRoom {
 
                     this.clients.set(socket, newPerson);
 
+                    this.people++;
+                    this.broadcastCount();
                     this.broadcast({ type: 'chat', message: `${name} has joined the chat!`, person: { name: 'Server', color: 'green', moderator: true } });
                     break;
 
@@ -79,6 +83,8 @@ class ChatRoom {
             }
 
             this.clients.delete(socket);
+            this.people--;
+            this.broadcastCount();
             this.broadcast({ type: 'chat', message: `${person.name} has left the chat`, person: { name: 'Server', color: 'gray', moderator: true } });
         })
     }
@@ -87,6 +93,14 @@ class ChatRoom {
         this.clients.forEach((_person, client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify(message));
+            }
+        })
+    }
+
+    private broadcastCount(): void {
+        this.clients.forEach((_person, client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ type: 'count', count: this.people }));
             }
         })
     }
@@ -121,6 +135,8 @@ class ChatRoom {
                 client.close();
 
                 this.clients.delete(client);
+                this.people--;
+                this.broadcastCount();
                 this.broadcast({ type: 'chat', message: `${name} has been kicked from the chat`, person: { name: 'Server', color: 'red', moderator: true } });
                 break;
 
